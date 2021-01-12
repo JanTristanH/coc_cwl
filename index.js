@@ -95,9 +95,9 @@ const enhanceMap = map => {
         value.totalOffensiveStars = value.attacks.map(e => e.stars).reduce(reducer, 0);
         value.totalDefensiveStars = value.bestOpponentAttacks.map(e => e.stars).reduce(reducer, 0);
         value.netTotal = value.totalOffensiveStars - value.totalDefensiveStars;
-        //delete value.bestOpponentAttacks;
-        //delete value.attacks;
-        //delete value.mapPositions;
+        delete value.bestOpponentAttacks;
+        delete value.attacks;
+        delete value.mapPositions;
     })
     return map;
 }
