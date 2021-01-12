@@ -20,6 +20,7 @@ lib-cov
 # intellij
 .idea
 .env
+results.json
 # Coverage directory used by tools like istanbul
 coverage
 *.lcov
