@@ -19,6 +19,7 @@ pids
 lib-cov
 # intellij
 .idea
+.env
 # Coverage directory used by tools like istanbul
 coverage
 *.lcov
