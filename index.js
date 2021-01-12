@@ -23,23 +23,12 @@ let headers = {headers: meta};
 fetch(endpointCurrentWarLeagueGroup, headers)
     .then(res => res.json())
     .then(json => {
-        /*
-                fs.writeFile('leaguegroup.json', JSON.stringify(json), (err) => {
-                    if (err) throw err;
-                    console.log('The file has been saved!');
-                });
 
-                 */
 
         json.rounds.map(round => round.warTags.map(e => {
-//            console.log(endpointClanwarleaguesWars + e.replace('#', '%'));
-            //console.log(endpointClanwarleaguesWars + e.replace('#', '%25'));
             fetch(endpointClanwarleaguesWars + e.replace('#', '%25'), headers)
                 .then(res => res.json())
                 .then(json => {
-                    //console.log(json);
-                    //console.log(json.clan.tag, '-----' , process.env.CLAN_TAG);
-
                     if (json.clan.tag == process.env.CLAN_TAG) {
                         json.clan.members.forEach(member => {
                             let stats;
