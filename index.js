@@ -18,63 +18,81 @@ const meta = {
     'User-Agent': 'node-fetch/1.0'
 };
 
-const headers = {headers: meta};
+const headers = {
+    headers: meta
+};
 
 const handleWar = war => {
     return new Promise((resolve, reject) => {
-        fetch(endpointClanWarLeaguesWars + war.replace('#', '%25'), headers)
-            .then(res => res.json())
-            .then(json => {
-                if (json.clan.tag == process.env.CLAN_TAG) {
-                    json.clan.members.forEach(member => {
-                        let stats;
-                        if (members.has(member.tag)) {
-                            stats = members.get(member.tag);
-                        } else {
-                            stats = {
-                                "name": member.name,
-                                "townhallLevel": member.townhallLevel,
-                                "participatantInWar": 0,
-                                "attacks": [],
-                                "bestOpponentAttacks": [],
-                                "mapPositions": []
+        if (war == "#0") {
+            resolve();
+        } else {
+            fetch(endpointClanWarLeaguesWars + war.replace('#', '%25'), headers)
+                .then(res => res.json())
+                .then(json => {
+                    if (json.state !== "warEnded") {
+                        //only count finished wars
+                        resolve();
+                    }
+                    if (json.opponent.tag == process.env.CLAN_TAG) {
+                        //switch opponent to clan if it is the one watched
+                        let temp_opponent = json.opponent;
+                        json.opponent = json.clan;
+                        json.clan = temp_opponent;
+                    }
+                    if (json.clan.tag == process.env.CLAN_TAG) {
+                        json.clan.members.forEach(member => {
+                            let stats;
+                            if (members.has(member.tag)) {
+                                stats = members.get(member.tag);
+                            } else {
+                                stats = {
+                                    "name": member.name,
+                                    "townhallLevel": member.townhallLevel,
+                                    "participatantInWar": 0,
+                                    "attacks": [],
+                                    "bestOpponentAttacks": [],
+                                    "mapPositions": []
+                                }
                             }
-                        }
-                        stats.participatantInWar++;
-                        if (member.attacks) {
-                            //check if target was attacked more than once
-                            if (json.opponent.members.filter(e => e.tag === member.attacks[0].defenderTag)[0].opponentAttacks > 1) {
-                                //check who also attacked it
-                                let earlierAttackers = json.clan.members.filter(m => {
-                                    if (m.attacks) {
-                                        return m.attacks[0].defenderTag == member.attacks[0].defenderTag
-                                            && m.attacks[0].order < member.attacks[0].order
-                                    }
-                                    return false
-                                });
-                                let compare = (a, b) => a.stars > b.stars ? -1 : 1;
-                                earlierAttackers.sort(compare);
-                                //console.log("hiiii");
-                                member.attacks[0].stars = member.attacks[0].stars -
-                                    (earlierAttackers[0] ? earlierAttackers[0].attacks[0].stars : 0);
+                            stats.participatantInWar++;
+                            if (member.attacks) {
+                                //check if target was attacked more than once
+                                if (json.opponent.members.filter(e => e.tag === member.attacks[0].defenderTag)[0].opponentAttacks > 1) {
+                                    //check who also attacked it
+                                    let earlierAttackers = json.clan.members.filter(m => {
+                                        if (m.attacks) {
+                                            return m.attacks[0].defenderTag == member.attacks[0].defenderTag &&
+                                                m.attacks[0].order < member.attacks[0].order
+                                        }
+                                        return false
+                                    });
+                                    let compare = (a, b) => a.stars > b.stars ? -1 : 1;
+                                    earlierAttackers.sort(compare);
+                                    //console.log("hiiii");
+                                    member.attacks[0].stars = member.attacks[0].stars -
+                                        (earlierAttackers[0] ? earlierAttackers[0].attacks[0].stars : 0);
+                                }
+                                stats.attacks.push(member.attacks[0]);
                             }
-                            stats.attacks.push(member.attacks[0]);
-                        }
-                        if (member.bestOpponentAttack) {
-                            stats.bestOpponentAttacks.push(member.bestOpponentAttack);
-                        }
-                        stats.mapPositions.push(member.mapPosition);
-                        members.set(member.tag, stats)
-                    })
-                }
-                resolve();
-            })
+                            if (member.bestOpponentAttack) {
+                                stats.bestOpponentAttacks.push(member.bestOpponentAttack);
+                            }
+                            stats.mapPositions.push(member.mapPosition);
+                            members.set(member.tag, stats)
+                        })
+                    }
+                    resolve();
+                })
+        }
     })
 };
 
 const handleRound = round => {
     return new Promise((resolve, reject) => {
-        Promise.all(round.warTags.map(handleWar)).then(() => resolve());
+        Promise.all(round.warTags.map(handleWar)).then(() => {
+            resolve()
+        });
     });
 }
 
@@ -86,7 +104,7 @@ const gerenateOutput = string => {
 }
 
 const mapToOrderedArray = map => {
-    let compare = ( a, b ) => a.netTotal > b.netTotal ? -1 : 1;
+    let compare = (a, b) => a.netTotal > b.netTotal ? -1 : 1;
     return [...map.values()].sort(compare);
 }
 
@@ -95,13 +113,12 @@ const enhanceMap = map => {
         value.totalOffensiveStars = value.attacks.map(e => e.stars).reduce(reducer, 0);
         value.totalDefensiveStars = value.bestOpponentAttacks.map(e => e.stars).reduce(reducer, 0);
         value.netTotal = value.totalOffensiveStars - value.totalDefensiveStars;
-        delete value.bestOpponentAttacks;
-        delete value.attacks;
-        delete value.mapPositions;
+         delete value.bestOpponentAttacks;
+         delete value.attacks;
+         delete value.mapPositions;
     })
     return map;
 }
-
 
 //start
 fetch(endpointCurrentWarLeagueGroup, headers)
@@ -109,7 +126,9 @@ fetch(endpointCurrentWarLeagueGroup, headers)
     .then(json => json.rounds)
     .then(rounds => {
         return new Promise((resolve, reject) => {
-            Promise.all(rounds.map(handleRound)).then(() => resolve(members));
+            Promise.all(rounds.map(handleRound)).then(() => {
+                resolve(members)
+            });
         });
     })
     .then(map => enhanceMap(map))
