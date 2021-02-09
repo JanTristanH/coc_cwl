@@ -122,6 +122,14 @@ const enhanceMap = map => {
 //start
 fetch(endpointCurrentWarLeagueGroup, headers)
     .then(res => res.json())
+    .then(json => {
+        return new Promise((resolve, reject) => {
+            if (json.reason) {
+                reject(JSON.stringify(json));
+            }
+            resolve(json);
+        });
+    })
     .then(json => json.rounds)
     .then(rounds => {
         const members = new Map();
