@@ -96,7 +96,7 @@ const handleRound = (round, members) => {
 }
 
 const gerenateOutput = string => {
-    fs.writeFile('results.json', string, (err) => {
+    fs.writeFile('results/results.json', string, (err) => {
         if (err) throw err;
         console.log('The file has been saved!');
     });
