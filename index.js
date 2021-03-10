@@ -2,6 +2,8 @@ require('dotenv').config();
 let fetch = require('node-fetch');
 const fs = require('fs');
 const reducer = (accumulator, currentValue) => accumulator + currentValue;
+const filePath = "results/results.json";
+//todo clarify stars is new stars
 
 const baseUrl = 'https://api.clashofclans.com/v1';
 const endpointCurrentWarLeagueGroup = baseUrl + `/clans/${process.env.CLAN_TAG.replace('#', '%23')}/currentwar/leaguegroup`;
@@ -70,6 +72,9 @@ const handleWar = (war, members) => {
                                         //console.log("hiiii");
                                         member.attacks[0].stars = member.attacks[0].stars -
                                             (earlierAttackers[0] ? earlierAttackers[0].attacks[0].stars : 0);
+                                        if (member.attacks[0].stars < 0 ){
+                                            member.attacks[0].stars = 0 ;
+                                        } 
                                     }
                                     stats.attacks.push(member.attacks[0]);
                                 }
@@ -96,14 +101,15 @@ const handleRound = (round, members) => {
 }
 
 const gerenateOutput = string => {
-    fs.writeFile('results/results.json', string, (err) => {
+    fs.writeFile(filePath, string, (err) => {
         if (err) throw err;
         console.log('The file has been saved!');
     });
 }
 
 const mapToOrderedArray = map => {
-    let compare = (a, b) => a.netProportion > b.netProportion ? -1 : 1;
+    let compare = (a, b) => a.netAverage > b.netAverage ? -1 : 1;
+    //let compare = (a, b) => a.netTotal > b.netTotal ? -1 : 1;
     return [...map.values()].sort(compare);
 }
 
@@ -115,12 +121,12 @@ const enhanceMap = map => {
         value.attacksCount = value.attacks.length;
         value.defensesCount = value.bestOpponentAttacks.length;
         
-        value.attackStarsProportion = value.totalOffensiveStars / value.participatantInWar;
-        value.defenseStarsProportion = value.totalDefensiveStars / value.defensesCount;
-        value.netProportion = value.attackStarsProportion - value.defenseStarsProportion;
+        value.attackStarsAverage = value.totalOffensiveStars / value.participatantInWar;
+        value.defenseStarsAverage = value.totalDefensiveStars / value.defensesCount;
+        value.netAverage = value.attackStarsAverage - value.defenseStarsAverage;
 
-        delete value.bestOpponentAttacks;
-        delete value.attacks;
+      //  delete value.bestOpponentAttacks;
+//        delete value.attacks;
         delete value.mapPositions;
     })
     return map;
