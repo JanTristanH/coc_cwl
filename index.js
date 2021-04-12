@@ -108,8 +108,8 @@ const gerenateOutput = string => {
 }
 
 const mapToOrderedArray = map => {
-    let compare = (a, b) => a.netAverage > b.netAverage ? -1 : 1;
-    //let compare = (a, b) => a.netTotal > b.netTotal ? -1 : 1;
+    //let compare = (a, b) => a.netAverage > b.netAverage ? -1 : 1;
+    let compare = (a, b) => a.netTotal > b.netTotal ? -1 : 1;
     return [...map.values()].sort(compare);
 }
 
@@ -125,8 +125,8 @@ const enhanceMap = map => {
         value.defenseStarsAverage = value.totalDefensiveStars / value.defensesCount;
         value.netAverage = value.attackStarsAverage - value.defenseStarsAverage;
 
-      //  delete value.bestOpponentAttacks;
-//        delete value.attacks;
+        delete value.bestOpponentAttacks;
+        delete value.attacks;
         delete value.mapPositions;
     })
     return map;
