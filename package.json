@@ -5,6 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "dotenv": "^8.2.0",
+    "mariadb": "^2.5.3",
     "node-fetch": "^2.6.1"
   },
   "devDependencies": {},
