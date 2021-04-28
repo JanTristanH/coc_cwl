@@ -9,6 +9,7 @@ const pool = mariadb.createPool({
     database: database,
     connectionLimit: 5
 });
+
 const sqlTrue = 1;
 const sqlFalse = 0;
 const month = 4;
@@ -21,13 +22,13 @@ const fieldListAttackTable = "attackerTag,month,defenderTag,defenderClanTag,dura
 const getPlacerholderQuestionmarks = () => {
     let s = "?"
     let count = fieldListAttackTable.split(",").length;
-    for (let i = 0; i < count - 1 ; i++) {
+    for (let i = 0; i < count - 1; i++) {
         s = s + ", ?"
     }
     return s;
 };
+
 const getPreparedWarToAttack = (war) => {
-    //only count finished wars or check how duplicates are handled
     let res = []
 
     const addAttacksFromClan = (clan, opponent) => {
@@ -47,7 +48,7 @@ const getPreparedWarToAttack = (war) => {
                 "year": year,
                 "clanTag": clan.tag,
                 "stars": member.attacks ? member.attacks[0].stars : 0,
-                "newStars": getNewStars(opponent, member),
+                "newStars": getNewStars(clan, opponent, member),
                 "attackerTownHallLevel": member.townhallLevel,
                 "attackOrder": member.attacks ? member.attacks[0].order : 0,
                 "defenderTownHallLevel": member.attacks ? getOpponentByTag(member.attacks[0].defenderTag).townhallLevel : 0, //TODO
@@ -87,14 +88,14 @@ const getPreparedWarToAttack = (war) => {
 }
 
 
-function getNewStars(opponent, member) {
+function getNewStars(clan, opponent, member) {
     if (!member.attacks) {
         return 0;
     }
     let newStars;
     if (opponent.members.filter(e => e.tag === member.attacks[0].defenderTag)[0].opponentAttacks > 1) {
         //check who also attacked it
-        let earlierAttackers = json.clan.members.filter(m => {
+        let earlierAttackers = clan.members.filter(m => {
             if (m.attacks) {
                 return m.attacks[0].defenderTag == member.attacks[0].defenderTag &&
                     m.attacks[0].order < member.attacks[0].order;
@@ -130,24 +131,18 @@ function getIsFinalDefensiveScore(opponent, member) {
 async function asyncFunction(array) {
     let conn;
     try {
-
         conn = await pool.getConnection();
-        const rows = await conn.query("SELECT 1 as val");
-        console.log(rows);
-        // rows: [ {val: 1}, meta: ... ]
 
-        //const res = await conn.query("INSERTO myTable value (?, ?)", [1, "mariadb"]);
-        // res: { affectedRows: 1, insertId: 1, warningStatus: 0 }
-        
         conn.beginTransaction();
 
-        conn.batch(`INSERT IGNORE INTO ${attackTableName}(${fieldListAttackTable}) VALUES (${getPlacerholderQuestionmarks()})`, array,(err, res) => {
+        conn.batch(`INSERT IGNORE INTO ${attackTableName}(${fieldListAttackTable}) VALUES (${getPlacerholderQuestionmarks()})`, array, (err, res) => {
             if (err) {
-              console.log('handle error');
-              console.log((err));
+                console.log('handle error');
+                console.log((err));
             } else {
-            console.log(res.affectedRows); // 2
-            }});
+                console.log(res.affectedRows); // 2
+            }
+        });
         //must handle error if any
         conn.commit();
 
@@ -159,9 +154,10 @@ async function asyncFunction(array) {
     }
 }
 
-const fs = require('fs');
-let rawdata = fs.readFileSync('war.json');
-let w = JSON.parse(rawdata);
-//TODO handle #0 war (not started one)
-let array = getPreparedWarToAttack(w);
-asyncFunction(array);
+
+let warToMaria = war => {
+    let array = getPreparedWarToAttack(war);
+    asyncFunction(array);
+}
+
+exports.warToMaria = warToMaria;
