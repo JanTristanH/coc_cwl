@@ -1,0 +1,25 @@
+SELECT 
+    `source`.`Defender_Tag` AS `Question 4__Defender_Tag`,
+    `source`.`sum` AS `DefensiveStars`,
+    `Question 4`.`sum` AS `OffensiveStars`,
+    `Question 4`.`sum` - `source`.`sum` AS `net_total`
+FROM ( SELECT 
+        `attack`.`Defender_Tag` AS `Defender_Tag`,
+        sum(`attack`.`Stars`) AS `sum` FROM `attack`
+        WHERE (
+           `attack`.`Month` = {{Month}}
+            AND `attack`.`Defender_Clan_Tag` = {{Clan_Tag}})
+   GROUP BY `attack`.`Defender_Tag`
+   ORDER BY `attack`.`Defender_Tag` ASC ) `source`
+LEFT JOIN (
+    SELECT
+        `attack1`.`Attacker_Tag` AS `Attacker_Tag`,
+        sum(`attack1`.`Stars`) AS `sum`
+    FROM `attack` AS `attack1`
+    WHERE (
+        `attack1`.`Month` = {{Month}} 
+        AND `attack1`.`Clan_Tag` = {{Clan_Tag}}) 
+    GROUP BY `attack1`.`Attacker_Tag`) `Question 4` 
+    ON `source`.`Defender_Tag` = `Question 4`.`Attacker_Tag`
+ORDER by `net_total` desc
+LIMIT 1048575

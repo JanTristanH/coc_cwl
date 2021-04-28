@@ -1,0 +1,21 @@
+CREATE TABLE attack (    
+	attackerTag VARCHAR(32),
+	month INT,    
+	defenderTag VARCHAR(32), 
+	defenderClanTag VARCHAR(32),    
+	duration INT, 
+	destructionPercentage INT,    
+	year INT,    
+	clanTag VARCHAR(32),    
+	stars INT,
+	newStars INT,
+	attackerTownHallLevel INT,    
+	attackOrder INT,    
+	defenderTownHallLevel INT,
+		attackerName VARCHAR(32),    
+		defenderName VARCHAR(32),    
+	isFinalDefensiveScore TINYINT,
+	isWarLeagueAttack TINYINT,
+	attckerMapPosition int,
+	PRIMARY KEY (attackerTag,defenderTag,month)
+	);
