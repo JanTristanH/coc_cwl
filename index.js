@@ -30,63 +30,8 @@ const handleWar = (war, members) => {
             fetch(endpointClanWarLeaguesWars + war.replace('#', '%25'), headers)
                 .then(res => res.json())
                 .then(json => {
-                    if (json.state !== "warEnded") {
-                        //only count finished wars
-                        resolve();
-                    } else {
-                        if (json.opponent.tag == process.env.CLAN_TAG) {
-                            //switch opponent to clan if it is the one watched
-                            let temp_opponent = json.opponent;
-                            json.opponent = json.clan;
-                            json.clan = temp_opponent;
-                        }
-                        if (json.clan.tag == process.env.CLAN_TAG) {
-                            json.clan.members.forEach(member => {
-                                let stats;
-                                if (members.has(member.tag)) {
-                                    stats = members.get(member.tag);
-                                } else {
-                                    stats = {
-                                        "name": member.name,
-                                        "townhallLevel": member.townhallLevel,
-                                        "participatantInWar": 0,
-                                        "attacks": [],
-                                        "bestOpponentAttacks": [],
-                                        "mapPositions": []
-                                    }
-                                }
-                                stats.participatantInWar++;
-                                if (member.attacks) {
-                                    //check if target was attacked more than once
-                                    if (json.opponent.members.filter(e => e.tag === member.attacks[0].defenderTag)[0].opponentAttacks > 1) {
-                                        //check who also attacked it
-                                        let earlierAttackers = json.clan.members.filter(m => {
-                                            if (m.attacks) {
-                                                return m.attacks[0].defenderTag == member.attacks[0].defenderTag &&
-                                                    m.attacks[0].order < member.attacks[0].order
-                                            }
-                                            return false
-                                        });
-                                        let compare = (a, b) => a.stars > b.stars ? -1 : 1;
-                                        earlierAttackers.sort(compare);
-                                        //console.log("hiiii");
-                                        member.attacks[0].stars = member.attacks[0].stars -
-                                            (earlierAttackers[0] ? earlierAttackers[0].attacks[0].stars : 0);
-                                        if (member.attacks[0].stars < 0 ){
-                                            member.attacks[0].stars = 0 ;
-                                        } 
-                                    }
-                                    stats.attacks.push(member.attacks[0]);
-                                }
-                                if (member.bestOpponentAttack) {
-                                    stats.bestOpponentAttacks.push(member.bestOpponentAttack);
-                                }
-                                stats.mapPositions.push(member.mapPosition);
-                                members.set(member.tag, stats)
-                            })
-                        }
-                        resolve();
-                    }
+                    console.log(JSON.stringify(json) +  "," );
+                    resolve();
                 })
         }
     })
@@ -110,7 +55,8 @@ const gerenateOutput = string => {
 const mapToOrderedArray = map => {
     //let compare = (a, b) => a.netAverage > b.netAverage ? -1 : 1;
     let compare = (a, b) => a.netTotal > b.netTotal ? -1 : 1;
-    return [...map.values()].sort(compare);
+    console.log("]");
+    return [...map.values()];//.sort(compare);
 }
 
 const enhanceMap = map => {
@@ -131,7 +77,7 @@ const enhanceMap = map => {
     })
     return map;
 }
-
+console.log("[");
 //start
 fetch(endpointCurrentWarLeagueGroup, headers)
     .then(res => res.json())
@@ -150,7 +96,7 @@ fetch(endpointCurrentWarLeagueGroup, headers)
             Promise.all(rounds.map(e => handleRound(e, members))).then(() => resolve(members));
         });
     })
-    .then(map => enhanceMap(map))
+    //.then(map => enhanceMap(map))
     .then(map => mapToOrderedArray(map))
-    .then(s => gerenateOutput(JSON.stringify(s)))
+    //.then(s => gerenateOutput(JSON.stringify(s)))
     .catch(e => console.log(e));
