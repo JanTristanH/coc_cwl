@@ -12,3 +12,13 @@ A table created by the sql script for attacks is expected to be present
 - put the desired clantag and your api Key along with the mariadb configuration in the .env file
 - run `npm start`
 - see the results in mariadb with a query or tool like matabase
+
+
+feature: have a cache to which ended war was already saved (dont throw them at maria)
+
+CLAN_TAG
+
+DB_HOST
+DB_USER
+DB_PASSWORD
+DB_PORT
