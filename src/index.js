@@ -1,4 +1,3 @@
-require('dotenv').config();
 let fetch = require('node-fetch');
 const {warToMaria} = require('./mariaDriver');
 

@@ -1,3 +1,4 @@
+require('dotenv').config();
 let express = require('express'),
     path = require('path'),
     httpPort = process.env.WEB_SERVER_PORT || 80,
@@ -18,7 +19,11 @@ app.get("/", (req, res) => {
     debug("index debug");
     res.sendFile(path.join(__dirname+'/public/index.html'));
 })
+//serve css & js files
+app.use('/static', express.static('public'));
 
+let apiHandler = require('./src/api');
+apiHandler.initialiseApi(app);
 
 
 app.listen(httpPort, function () {
