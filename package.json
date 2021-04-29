@@ -4,7 +4,9 @@
   "description": "compute internal cwl rankings for distributing league bonus",
   "main": "index.js",
   "dependencies": {
+    "body-parser": "^1.19.0",
     "dotenv": "^8.2.0",
+    "express": "^4.17.1",
     "mariadb": "^2.5.3",
     "node-fetch": "^2.6.1"
   },
