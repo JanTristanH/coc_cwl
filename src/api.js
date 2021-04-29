@@ -19,20 +19,20 @@ let initialiseApi = app => {
     app.route(prefix + '/token')
         .get(async (req, res) => {
             res.send({
-                "token": token
+                token
             });
         })
         .post(async (req, res) => {
             let {
-                newToken,
+                token,
                 ip
             } = req.body;
-            config.token = newToken;
+            config.token = token;
             config.ipForToken = ip || await promiseGetServerIP()
             //update global token
             process.env.API_KEY = "Bearer " + config.token;
             res.send({
-                "token": token
+                token
             });
         });
 
@@ -48,17 +48,22 @@ let initialiseApi = app => {
             promiseGetServerIP().then(ip => {
                 let isValid = ip == config.ipForToken;
                 res.send({
-                    "isValid": isValid
+                    isValid
                 })
             })
         })
-    
-        app.route(prefix + '/triggerCocApiTo')
-        .get(async (req, res) => {
 
+    app.route(prefix + '/triggerCocApiTo')
+        .get(async (req, res) => {
+            let {
+                start
+            } = require("./index");
+            start().then(e => {
                 res.send({
-                    "sttus": "not Implemented"
+                    "status": "Done"
                 })
+            })
+
 
         })
 

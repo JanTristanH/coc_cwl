@@ -1,5 +1,7 @@
 let fetch = require('node-fetch');
-const {warToMaria} = require('./mariaDriver');
+const {
+    warToMaria
+} = require('./mariaDriver');
 
 const baseUrl = 'https://api.clashofclans.com/v1';
 const endpointCurrentWarLeagueGroup = baseUrl + `/clans/${process.env.CLAN_TAG.replace('#', '%23')}/currentwar/leaguegroup`;
@@ -42,21 +44,29 @@ const handleRound = (round) => {
 }
 
 //start
-fetch(endpointCurrentWarLeagueGroup, headers)
-    .then(res => res.json())
-    .then(json => {
-        return new Promise((resolve, reject) => {
-            if (json.reason) {
-                reject(JSON.stringify(json));
-            }
-            resolve(json);
-        });
-    })
-    .then(json => json.rounds)
-    .then(rounds => {
+let start = () => {
+    let a = 2;
+    a = 2 + 2;
+    return new Promise((resolve, reject) => {
+        fetch(endpointCurrentWarLeagueGroup, headers)
+            .then(res => res.json())
+            .then(json => {
+                return new Promise((resolve, reject) => {
+                    if (json.reason) {
+                        reject(JSON.stringify(json));
+                    }
+                    resolve(json);
+                });
+            })
+            .then(json => json.rounds)
+            .then(rounds => {
 
-        return new Promise((resolve, reject) => {
-            Promise.all(rounds.map(e => handleRound(e))).then(() => resolve());
-        });
+                return new Promise((resolve, reject) => {
+                    Promise.all(rounds.map(e => handleRound(e))).then(() => resolve());
+                });
+            })
+            .then(p => resolve())
+            .catch(e => console.log(e));
     })
-    .catch(e => console.log(e));
+}
+module.exports.start = start;
