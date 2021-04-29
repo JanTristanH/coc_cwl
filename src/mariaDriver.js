@@ -12,8 +12,6 @@ const pool = mariadb.createPool({
 
 const sqlTrue = 1;
 const sqlFalse = 0;
-const month = 4;
-const year = 2021;
 const noId = "#0";
 const isWarLeagueAttack = sqlTrue;
 
@@ -30,6 +28,9 @@ const getPlacerholderQuestionmarks = () => {
 
 const getPreparedWarToAttack = (war) => {
     let res = []
+    var datetime = new Date();
+    const month = datetime.getMonth() + 1;
+    const year = datetime.getFullYear;
 
     const addAttacksFromClan = (clan, opponent) => {
         let res = []
