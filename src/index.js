@@ -3,6 +3,7 @@ const {
     warToMaria
 } = require('./mariaDriver');
 
+
 const baseUrl = 'https://api.clashofclans.com/v1';
 const endpointCurrentWarLeagueGroup = baseUrl + `/clans/${process.env.CLAN_TAG.replace('#', '%23')}/currentwar/leaguegroup`;
 const endpointClanWarLeaguesWars = baseUrl + '/clanwarleagues/wars/';
@@ -45,8 +46,6 @@ const handleRound = (round) => {
 
 //start
 let start = () => {
-    let a = 2;
-    a = 2 + 2;
     return new Promise((resolve, reject) => {
         fetch(endpointCurrentWarLeagueGroup, headers)
             .then(res => res.json())
@@ -65,8 +64,13 @@ let start = () => {
                     Promise.all(rounds.map(e => handleRound(e))).then(() => resolve());
                 });
             })
-            .then(p => resolve())
-            .catch(e => console.log(e));
+            .then(p => resolve({
+                "status": "done"
+            }))
+            .catch(e => {
+                resolve(e);
+                console.log(e)
+            });
     })
 }
 module.exports.start = start;

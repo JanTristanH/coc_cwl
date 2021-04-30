@@ -16,9 +16,9 @@ A table created by the sql script for attacks is expected to be present
 
 feature: have a cache to which ended war was already saved (dont throw them at maria)
 
-CLAN_TAG
-
-DB_HOST
-DB_USER
-DB_PASSWORD
-DB_PORT
+# env data needed
+- CLAN_TAG
+- DB_HOST
+- DB_USER
+- DB_PASSWORD
+- DB_PORT

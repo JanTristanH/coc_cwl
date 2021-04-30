@@ -59,9 +59,7 @@ let initialiseApi = app => {
                 start
             } = require("./index");
             start().then(e => {
-                res.send({
-                    "status": "Done"
-                })
+                res.send(e)
             })
 
 

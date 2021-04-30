@@ -1,3 +1,5 @@
+let ip;
+
 function updateToken() {
     let token = document.getElementById("token").value;
     if (token == "") {
@@ -11,7 +13,8 @@ function updateToken() {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                token
+                token,
+                ip
             }),
         })
         .then(response => response.json())
@@ -30,17 +33,20 @@ function refreshValue() {
         });
     fetch("api/serverIp")
         .then(response => response.json())
-        .then(json => document.getElementById("serverIp").innerHTML = json.ip);
+        .then(json => {
+            document.getElementById("serverIp").innerHTML = json.ip;
+            ip = json.ip;
+        });
 
 }
 
 function fetchGameData() {
     fetch("api/triggerCocApiTo")
-    .then(response => response.json())
-    .then(json => {
-        alert("DB Update happend");
-        console.log(json);
-    });
+        .then(response => response.json())
+        .then(json => {
+            alert("DB Update happend \n" + JSON.stringify(json));
+            console.log(json);
+        });
 }
 
 refreshValue()

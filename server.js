@@ -7,13 +7,12 @@ let express = require('express'),
 
     var debug = require('debug')('node_blog:server');
 
-// middle ware bidy parser
-let bodyParser = require('body-parser');
 
-// parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({
-    extended: false
-}))
+
+app.use(express.json());
+app.use(express.urlencoded({
+  extended: false
+}));
 
 app.get("/", (req, res) => {
     debug("index debug");
@@ -25,7 +24,10 @@ app.use('/static', express.static('public'));
 let apiHandler = require('./src/api');
 apiHandler.initialiseApi(app);
 
-
+console.log(
+    process.env.DB_PORT,
+    process.env.CLAN_TAG
+);
 app.listen(httpPort, function () {
     console.log('HTTP Server: http://localhost:' + httpPort);
 });
