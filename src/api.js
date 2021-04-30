@@ -65,6 +65,18 @@ let initialiseApi = app => {
 
         })
 
+        app.route(prefix + '/triggerUpdateClans')
+        .get(async (req, res) => {
+            let {
+                updateClans
+            } = require("./index");
+            updateClans().then(e => {
+                res.send(e)
+            })
+
+
+        })
+
 
 
 };

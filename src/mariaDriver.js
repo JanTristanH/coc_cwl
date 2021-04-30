@@ -1,6 +1,9 @@
-require('dotenv').config();
+const e = require('express');
 const mariadb = require('mariadb');
 const database = "clash_of_clans";
+if (!process.env.DB_HOST) {
+    require('dotenv').config();
+}
 const pool = mariadb.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -14,12 +17,16 @@ const sqlTrue = 1;
 const sqlFalse = 0;
 const noId = "#0";
 const isWarLeagueAttack = sqlTrue;
+const clanTableName = 'clan';
+const clanTableKey = 'tag';
+const attackTableClanTagField = 'clanTag';
 
 const attackTableName = "attack";
 const fieldListAttackTable = "attackerTag,month,defenderTag,defenderClanTag,duration,destructionPercentage,year,clanTag,stars,newStars,attackerTownHallLevel,attackOrder,defenderTownHallLevel,attackerName,defenderName,isFinalDefensiveScore,isWarLeagueAttack,attckerMapPosition";
-const getPlacerholderQuestionmarks = () => {
+const fieldListClanTable = 'tag,name,warLeague_name,warLeague_id, clanVersusPoints, requiredTrophies, requiredVersusTrophies, requiredTownhallLevel, isWarLogPublic, clanLevel, warFrequency, warWinStreak, warWins, warTies, warLosses, clanPoints, chatLanguageId, chatLanguageName, chatLanguageLanguageCode, labelOneName, labelOneId, labelTwoName, labelTwoId,labelThreeName,labelThreeId,badgeUrlsLarge,locationLocalizedName,locationId,locationName,locationIsCountry,locationCountryCode,type,members,description'
+const getPlacerholderQuestionmarks = (string) => {
     let s = "?"
-    let count = fieldListAttackTable.split(",").length;
+    let count = string.split(",").length;
     for (let i = 0; i < count - 1; i++) {
         s = s + ", ?"
     }
@@ -136,7 +143,7 @@ async function asyncFunction(array) {
 
         conn.beginTransaction();
 
-        conn.batch(`INSERT IGNORE INTO ${attackTableName}(${fieldListAttackTable}) VALUES (${getPlacerholderQuestionmarks()})`, array, (err, res) => {
+        conn.batch(`INSERT IGNORE INTO ${attackTableName}(${fieldListAttackTable}) VALUES (${getPlacerholderQuestionmarks(fieldListAttackTable)})`, array, (err, res) => {
             if (err) {
                 console.log('handle error');
                 console.log((err));
@@ -162,3 +169,94 @@ let warToMaria = war => {
 }
 
 exports.warToMaria = warToMaria;
+
+
+function getMissingClans() {
+    return new Promise(async (resolve, reject) => {
+        let conn;
+        try {
+            conn = await pool.getConnection();
+            conn
+                .query(`select distinct ${attackTableClanTagField} 
+            from ${attackTableName}
+            left join ${clanTableName}
+                on ${clanTableName}.${clanTableKey} = ${attackTableName}.${attackTableClanTagField}
+            where ${clanTableName}.${clanTableKey} is null`)
+                .then(rows => {
+                    console.log(rows); //[ { 'NOW()': 2018-07-02T17:06:38.000Z }, meta: [ ... ] ]
+                    resolve(rows);
+                })
+
+        } catch (err) {
+            conn.rollback();
+            throw err;
+        } finally {
+            if (conn) conn.release(); //release to pool
+        }
+    })
+}
+
+exports.getMissingClans = getMissingClans;
+
+let insertClanData = clanData => {
+    return new Promise(async (resolve, reject) => {
+        let conn;
+        try {
+            conn = await pool.getConnection();
+            let array = [
+                clanData.tag,
+                clanData.name,
+                clanData.warLeague.name,
+                clanData.warLeague.id,
+                clanData.clanVersusPoints,
+                clanData.requiredTrophies,
+                clanData.requiredVersusTrophies,
+                clanData.requiredTownhallLevel,
+                clanData.isWarLogPublic,
+                clanData.clanLevel,
+                clanData.warFrequency,
+                clanData.warWinStreak,
+                clanData.warWins,
+                clanData.warTies || -1,
+                clanData.warLosses || -1,
+                clanData.clanPoints,
+                clanData.chatLanguage ? clanData.chatLanguage.id || '' : '',
+                clanData.chatLanguage ? clanData.chatLanguage.name || '' : '',
+                clanData.chatLanguage ? clanData.chatLanguage.languageCode || '' : '',
+                clanData.labels[0] ? clanData.labels[0].name || '' : '',
+                clanData.labels[0] ? clanData.labels[0].id || -1 : -1,
+                clanData.labels[1] ? clanData.labels[1].name || '' : '',
+                clanData.labels[1] ? clanData.labels[1].id || -1 : -1,
+                clanData.labels[2] ? clanData.labels[2].name || '' : '',
+                clanData.labels[2] ? clanData.labels[2].id || -1 : -1,
+                clanData.badgeUrls.large,
+                clanData.location.localizedName || '',
+                clanData.location.id,
+                clanData.location.name,
+                clanData.location.isCountry ? 1 : 0,
+                clanData.location.isCountry ? clanData.location.countryCode : '',
+                clanData.type,
+                clanData.members,
+                clanData.description
+            ];
+
+            conn
+                .query(`INSERT IGNORE INTO ${clanTableName}(${fieldListClanTable}) VALUES (${getPlacerholderQuestionmarks(fieldListClanTable)})`, array)
+                .then(res => {
+                    console.log(res);
+                    resolve(res);
+                })
+
+        } catch (err) {
+            conn.rollback();
+            throw err;
+        } finally {
+            if (conn) conn.release(); //release to pool
+            resolve(clanData);
+        }
+
+
+    })
+}
+
+exports.insertClanData = insertClanData;

@@ -3,11 +3,12 @@ const {
     warToMaria
 } = require('./mariaDriver');
 
+const placeholder = '#';
 
 const baseUrl = 'https://api.clashofclans.com/v1';
 const endpointCurrentWarLeagueGroup = baseUrl + `/clans/${process.env.CLAN_TAG.replace('#', '%23')}/currentwar/leaguegroup`;
 const endpointClanWarLeaguesWars = baseUrl + '/clanwarleagues/wars/';
-
+const endpointClan = baseUrl + '/clans/' + placeholder
 const meta = {
     'Accept-Encoding': 'gzip',
     'authorization': process.env.API_KEY,
@@ -74,3 +75,39 @@ let start = () => {
     })
 }
 module.exports.start = start;
+
+let fetchClanData = (clanTag) => {
+    return new Promise((resolve, reject) => {
+        clanTag = clanTag.replace('#', '%25');
+        let url = endpointClan.replace(placeholder, clanTag);
+        fetch(url, headers)
+            .then(res => res.json())
+            .then(json => {
+                resolve(json);
+            })
+    })
+}
+
+let updateClans = () => {
+    return new Promise((resolve, reject) => {
+        let {
+            getMissingClans,
+            insertClanData
+        } = require('./mariaDriver.js')
+        getMissingClans()
+            .then(rows => {
+                
+                rows.forEach(row => {
+                    if (row.clanTag) {
+                        fetchClanData(row.clanTag)
+                            .then(clanData => {
+                                insertClanData(clanData)
+                                    .then(res => resolve(res));
+                            });
+                    }
+                });
+            });
+    })
+}
+
+module.exports.updateClans = updateClans;

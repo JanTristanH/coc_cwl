@@ -49,4 +49,13 @@ function fetchGameData() {
         });
 }
 
+function updateClans() {
+    fetch("api/triggerUpdateClans")
+        .then(response => response.json())
+        .then(json => {
+            alert("DB Update happend \n" + JSON.stringify(json));
+            console.log(json);
+        });
+}
+
 refreshValue()
