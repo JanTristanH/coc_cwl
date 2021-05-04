@@ -30,7 +30,12 @@ const handleWar = (war) => {
             fetch(endpointClanWarLeaguesWars + war.replace('#', '%25'), headers)
                 .then(res => res.json())
                 .then(json => {
-                    warToMaria(json);
+                    if (json.state !== "warEnded") {
+                        //only count finished wars
+                        resolve();
+                    } else {
+                        warToMaria(json);
+                    };
                     resolve();
                 })
         }
@@ -96,7 +101,7 @@ let updateClans = () => {
         } = require('./mariaDriver.js')
         getMissingClans()
             .then(rows => {
-                
+
                 rows.forEach(row => {
                     if (row.clanTag) {
                         fetchClanData(row.clanTag)
