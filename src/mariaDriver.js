@@ -37,7 +37,7 @@ const getPreparedWarToAttack = (war) => {
     let res = []
     var datetime = new Date();
     const month = datetime.getMonth() + 1;
-    const year = datetime.getFullYear;
+    const year = datetime.getFullYear();
 
     const addAttacksFromClan = (clan, opponent) => {
         let res = []
